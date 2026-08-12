@@ -24,7 +24,9 @@ import socket
 from abc import ABC, abstractmethod
 
 DEFAULT_LOCAL_PORT = 23
-DEFAULT_CLOUD_HOST = "duepiwebserver1.com"
+DEFAULT_CLOUD_HOST = "duepiwebserver.com"
+# Fallback IP the MyDPremote app falls back to when the hostname does not resolve.
+DEFAULT_CLOUD_IP = "62.141.46.29"
 DEFAULT_CLOUD_PORT = 3000
 
 
@@ -139,11 +141,28 @@ class LocalTcpTransport(_SocketTransport):
 class CloudRelayTransport(_SocketTransport):
     """DPRemote cloud relay transport.
 
-    The relay handshake (how the app selects a device by its unique code, and
-    any login/token exchange) is extracted from the decompiled ``com.DPremote``
-    app. It is intentionally not guessed here: :meth:`connect` raises until the
-    handshake is implemented, so a misconfiguration fails loudly.
+    Reverse-engineered from the MyDPremote app (``com.DPremote``, a Qt/C++ app;
+    the connection logic lives in ``DeviceConnection`` inside
+    ``libdpremote_arm64-v8a.so``). The relay is a master/slave TCP bridge on
+    ``duepiwebserver.com:3000``: the stove's WiFi module holds a ``slave:``
+    connection identified by the unique code printed on the module, and the app
+    connects as ``master:`` for that code. So the whole handshake is a single
+    line sent right after the socket opens::
+
+        master:<device_code>#
+
+    After that line the relay bridges bytes transparently, and the same
+    Duepi-EVO command frames (see :mod:`.protocol`) flow in both directions.
+
+    Note: the app also supports an optional AES layer (``encryptionEnabled`` /
+    ``encryptionKey``), off on the standard path; not implemented here.
+
+    ``username``/``password`` are accepted for forward-compat but are not part of
+    this relay handshake, so they are unused.
     """
+
+    #: Sent verbatim on connect to select the remote device on the relay.
+    MASTER_TEMPLATE = "master:{code}#"
 
     def __init__(
         self,
@@ -165,13 +184,22 @@ class CloudRelayTransport(_SocketTransport):
         self._handshake()
 
     def _handshake(self) -> None:
-        """Perform the relay handshake to bind this session to ``device_code``.
+        """Select the remote device on the relay by sending ``master:<code>#``.
 
-        TODO(apk): implement from the decompiled com.DPremote app. Expected to
-        send the device code (and any credentials/token) and await an
-        acknowledgement before protocol frames may be exchanged.
+        The relay does not send an acknowledgement line of its own; it simply
+        begins bridging to the module, so any early bytes are drained (they
+        belong to the first protocol exchange, not to the handshake) and the
+        caller proceeds to send command frames.
         """
-        raise NotImplementedError(
-            "DPRemote cloud handshake not yet implemented -- pending analysis of "
-            "the com.DPremote APK."
-        )
+        if not self.device_code:
+            raise TransportError("A device code is required for the cloud relay")
+        assert self._sock is not None, "transport not connected"
+        master = self.MASTER_TEMPLATE.format(code=self.device_code)
+        try:
+            self._sock.sendall(master.encode("latin1"))
+        except (TimeoutError, socket.timeout) as err:
+            raise TransportTimeout(f"Timeout during relay handshake to {self.host}") from err
+        except OSError as err:
+            raise TransportError(f"Relay handshake failed to {self.host}: {err}") from err
+        # Drain any immediate greeting the relay/module may push (best effort).
+        self.drain_optional(timeout=0.3)

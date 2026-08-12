@@ -12,7 +12,7 @@ CONF_MAX_TEMP = "max_temp"
 CONF_AUTO_RESET = "auto_reset"
 
 DEFAULT_NAME = "DPRemote Stove"
-DEFAULT_SERVER = "duepiwebserver1.com"
+DEFAULT_SERVER = "duepiwebserver.com"
 DEFAULT_PORT = 3000
 DEFAULT_SCAN_INTERVAL = 60
 DEFAULT_MIN_TEMP = 16.0
