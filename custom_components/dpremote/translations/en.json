@@ -3,20 +3,17 @@
     "step": {
       "user": {
         "title": "DPRemote (Duepi EVO cloud)",
-        "description": "Connect to your stove through Duepi's cloud relay. The device code is the unique code printed on the back of the EVO Remote WiFi module.",
+        "description": "Connect to your stove through Duepi's cloud relay. Enter the same values the MyDPremote app shows under DIRECCIÓN (Address), PUERTA (Port) and CÓDIGO DE DISPOSITIVO (Device code). The device code is the unique code printed on the back of the EVO Remote WiFi module.",
         "data": {
           "name": "Name",
-          "device_code": "Device code",
-          "username": "Username (if your account requires one)",
-          "password": "Password (if your account requires one)",
-          "host": "Server host",
-          "port": "Server port"
+          "host": "Address (as shown in the app, e.g. 1.duepiwebserver1.com)",
+          "port": "Port (as shown in the app, e.g. 2000)",
+          "device_code": "Device code"
         }
       }
     },
     "error": {
-      "cannot_connect": "Could not reach the stove through the cloud relay. Check the device code and that the module is online.",
-      "handshake_pending": "The cloud relay handshake is not implemented yet in this build."
+      "cannot_connect": "Could not reach the stove through the cloud relay. Check the address, port and device code, and that the module is online."
     },
     "abort": {
       "already_configured": "This device code is already configured."

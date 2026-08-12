@@ -31,9 +31,15 @@ Duepi‑EVO command set this project reuses.
    `https://github.com/jagalindo/duepi_cloud_ha` (category *Integration*).
 2. Install **DPRemote (Duepi EVO cloud)**, restart Home Assistant.
 3. *Settings → Devices & Services → Add Integration → DPRemote*.
-4. Enter the **device code** — the unique code printed on the back of the EVO
-   Remote WiFi module (the same code you register in the MyDPremote app). Server
-   host/port default to `duepiwebserver.com:3000`.
+4. Enter the **same values the MyDPremote app shows** on its device screen:
+   - **Address** (DIRECCIÓN) — e.g. `1.duepiwebserver1.com`
+   - **Port** (PUERTA) — e.g. `2000`
+   - **Device code** (CÓDIGO DE DISPOSITIVO) — the unique code printed on the
+     back of the EVO Remote WiFi module, e.g. `m4g0b8f7cg`
+
+   The address and port are **per account/region** (the app pre‑fills them; they
+   can carry an instance prefix like `1.` and use port `2000` or `3000`), so copy
+   them exactly from your app rather than assuming the defaults.
 
 ## How the cloud connection works
 

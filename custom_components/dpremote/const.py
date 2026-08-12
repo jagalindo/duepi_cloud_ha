@@ -12,8 +12,11 @@ CONF_MAX_TEMP = "max_temp"
 CONF_AUTO_RESET = "auto_reset"
 
 DEFAULT_NAME = "DPRemote Stove"
-DEFAULT_SERVER = "duepiwebserver.com"
-DEFAULT_PORT = 3000
+# Defaults are only a starting hint: the address and port are per-account and
+# must match what the MyDPremote app shows under DIRECCIÓN / PUERTA (they can
+# include an instance prefix such as "1." and vary by port, e.g. 2000 or 3000).
+DEFAULT_SERVER = "1.duepiwebserver1.com"
+DEFAULT_PORT = 2000
 DEFAULT_SCAN_INTERVAL = 60
 DEFAULT_MIN_TEMP = 16.0
 DEFAULT_MAX_TEMP = 30.0

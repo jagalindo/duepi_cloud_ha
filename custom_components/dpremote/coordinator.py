@@ -8,10 +8,8 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_HOST,
-    CONF_PASSWORD,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
-    CONF_USERNAME,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -44,19 +42,11 @@ def build_client(entry: ConfigEntry) -> DuepiClient:
     device_code = data[CONF_DEVICE_CODE]
     server = data.get(CONF_HOST, DEFAULT_SERVER)
     port = data.get(CONF_PORT, DEFAULT_PORT)
-    username = data.get(CONF_USERNAME)
-    password = data.get(CONF_PASSWORD)
     min_temp = float(options.get(CONF_MIN_TEMP, DEFAULT_MIN_TEMP))
     max_temp = float(options.get(CONF_MAX_TEMP, DEFAULT_MAX_TEMP))
 
     def transport_factory() -> CloudRelayTransport:
-        return CloudRelayTransport(
-            device_code,
-            username=username,
-            password=password,
-            host=server,
-            port=port,
-        )
+        return CloudRelayTransport(device_code, host=server, port=port)
 
     return DuepiClient(
         transport_factory,

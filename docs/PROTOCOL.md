@@ -80,6 +80,8 @@ frame bytes. Left as a TODO.
 - Confirm the relay accepts `master:<code>#` with no trailing newline and no
   credentials (username/password are app‑account concepts, not part of this
   line).
-- Confirm port 3000 for the current server (older docs cited
-  `duepiwebserver1.com:3000`; this build uses `duepiwebserver.com`).
+- Address/port are **user-configurable in the app** and per account/region.
+  `duepiwebserver.com:3000` is only the hardcoded fallback in the binary; a real
+  user's app screen showed `1.duepiwebserver1.com` : `2000`. The integration
+  therefore treats address and port as required, user-entered fields.
 - Confirm whether any module in the field turns the AES layer on by default.

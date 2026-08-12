@@ -11,10 +11,8 @@ from homeassistant import config_entries
 from homeassistant.const import (
     CONF_HOST,
     CONF_NAME,
-    CONF_PASSWORD,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
-    CONF_USERNAME,
 )
 from homeassistant.core import callback
 
@@ -44,13 +42,9 @@ def _make_probe_client(user_input: dict[str, Any]) -> DuepiClient:
     device_code = user_input[CONF_DEVICE_CODE]
     server = user_input.get(CONF_HOST, DEFAULT_SERVER)
     port = user_input.get(CONF_PORT, DEFAULT_PORT)
-    username = user_input.get(CONF_USERNAME) or None
-    password = user_input.get(CONF_PASSWORD) or None
 
     def factory() -> CloudRelayTransport:
-        return CloudRelayTransport(
-            device_code, username=username, password=password, host=server, port=port
-        )
+        return CloudRelayTransport(device_code, host=server, port=port)
 
     return DuepiClient(factory, min_temp=DEFAULT_MIN_TEMP, max_temp=DEFAULT_MAX_TEMP)
 
@@ -74,9 +68,6 @@ class DPRemoteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         try:
             await self.hass.async_add_executor_job(client.fetch_state)
             return None
-        except NotImplementedError:
-            # Cloud relay handshake not yet implemented (pending APK analysis).
-            return "handshake_pending"
         except (ClientError, TransportError):
             return "cannot_connect"
 
@@ -101,10 +92,8 @@ class DPRemoteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data = {
                     CONF_NAME: user_input[CONF_NAME],
                     CONF_DEVICE_CODE: device_code,
-                    CONF_HOST: user_input.get(CONF_HOST, DEFAULT_SERVER),
-                    CONF_PORT: user_input.get(CONF_PORT, DEFAULT_PORT),
-                    CONF_USERNAME: user_input.get(CONF_USERNAME) or None,
-                    CONF_PASSWORD: user_input.get(CONF_PASSWORD) or None,
+                    CONF_HOST: user_input[CONF_HOST],
+                    CONF_PORT: user_input[CONF_PORT],
                 }
                 options = {
                     CONF_MIN_TEMP: DEFAULT_MIN_TEMP,
@@ -121,13 +110,11 @@ class DPRemoteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         schema = vol.Schema(
             {
                 vol.Required(CONF_NAME, default=defaults[CONF_NAME]): str,
-                vol.Required(CONF_DEVICE_CODE, default=defaults.get(CONF_DEVICE_CODE, "")): str,
-                vol.Optional(CONF_USERNAME, default=defaults.get(CONF_USERNAME, "")): str,
-                vol.Optional(CONF_PASSWORD, default=defaults.get(CONF_PASSWORD, "")): str,
-                vol.Optional(CONF_HOST, default=defaults[CONF_HOST]): str,
-                vol.Optional(CONF_PORT, default=defaults[CONF_PORT]): vol.All(
+                vol.Required(CONF_HOST, default=defaults[CONF_HOST]): str,
+                vol.Required(CONF_PORT, default=defaults[CONF_PORT]): vol.All(
                     vol.Coerce(int), vol.Range(min=1, max=65535)
                 ),
+                vol.Required(CONF_DEVICE_CODE, default=defaults.get(CONF_DEVICE_CODE, "")): str,
             }
         )
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
