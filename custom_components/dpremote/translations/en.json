@@ -1,0 +1,38 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "DPRemote (Duepi EVO cloud)",
+        "description": "Connect to your stove through Duepi's cloud relay. The device code is the unique code printed on the back of the EVO Remote WiFi module.",
+        "data": {
+          "name": "Name",
+          "device_code": "Device code",
+          "username": "Username (if your account requires one)",
+          "password": "Password (if your account requires one)",
+          "host": "Server host",
+          "port": "Server port"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach the stove through the cloud relay. Check the device code and that the module is online.",
+      "handshake_pending": "The cloud relay handshake is not implemented yet in this build."
+    },
+    "abort": {
+      "already_configured": "This device code is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "DPRemote options",
+        "data": {
+          "min_temp": "Minimum target temperature (°C)",
+          "max_temp": "Maximum target temperature (°C)",
+          "auto_reset": "Auto-reset on out-of-pellets / ignition failure",
+          "scan_interval": "Poll interval (seconds)"
+        }
+      }
+    }
+  }
+}

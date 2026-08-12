@@ -1,0 +1,11 @@
+{
+  "domain": "dpremote",
+  "name": "DPRemote (Duepi EVO cloud)",
+  "codeowners": ["@jagalindo"],
+  "config_flow": true,
+  "documentation": "https://github.com/jagalindo/duepi_cloud_ha",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/jagalindo/duepi_cloud_ha/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}
