@@ -5,3 +5,7 @@ __pycache__/
 venv/
 *.egg-info/
 .DS_Store
+
+# Large reference binaries are not stored in-repo
+reference_code/*.apk
+*.apk
