@@ -29,7 +29,8 @@
           "auto_reset": "Auto-reset on out-of-pellets / ignition failure",
           "log_to_file": "Log every poll to a CSV file (config/dpremote/) for later analysis",
           "scan_interval": "Poll interval while the stove is ON (seconds)",
-          "idle_scan_interval": "Poll interval while the stove is OFF (seconds)"
+          "idle_scan_interval": "Poll interval while the stove is OFF (seconds)",
+          "off_grace_period": "Keep fast polling for this long after the stove turns OFF (seconds)"
         }
       }
     }

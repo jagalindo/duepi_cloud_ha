@@ -21,13 +21,24 @@ def is_stove_active(burner_status: str) -> bool:
 
 
 def choose_interval_seconds(
-    burner_status: str, active_seconds: int, idle_seconds: int
+    burner_status: str,
+    active_seconds: int,
+    idle_seconds: int,
+    seconds_since_active: float = 0.0,
+    grace_seconds: int = 0,
 ) -> int:
-    """Return the next poll interval: active while on, idle while off.
+    """Return the next poll interval.
+
+    - Active (on/transitioning): the active interval.
+    - Recently off (within ``grace_seconds`` of the last active reading): keep
+      the active interval, so a quick off→on is caught almost immediately.
+    - Off past the grace window: the idle interval.
 
     The idle interval never drops below the active one (a larger "idle" that is
     accidentally configured smaller would defeat the purpose, so it's clamped).
     """
     if is_stove_active(burner_status):
+        return active_seconds
+    if seconds_since_active < grace_seconds:
         return active_seconds
     return max(active_seconds, idle_seconds)

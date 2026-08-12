@@ -12,6 +12,7 @@ CONF_MAX_TEMP = "max_temp"
 CONF_AUTO_RESET = "auto_reset"
 CONF_LOG_TO_FILE = "log_to_file"
 CONF_IDLE_SCAN_INTERVAL = "idle_scan_interval"
+CONF_OFF_GRACE_PERIOD = "off_grace_period"
 
 DEFAULT_NAME = "DPRemote Stove"
 # Defaults are only a starting hint: the address and port are per-account and
@@ -23,6 +24,10 @@ DEFAULT_SCAN_INTERVAL = 60
 # When the stove is fully off, poll this much less often (default 15 min). Kept
 # non-zero so a remote/scheduled turn-on is still noticed within one idle cycle.
 DEFAULT_IDLE_SCAN_INTERVAL = 900
+# After the stove turns off, keep polling at the active interval for this long
+# (default 15 min) before backing off to the idle interval, so a quick off→on
+# is caught almost immediately. Set to 0 to back off as soon as it's off.
+DEFAULT_OFF_GRACE_PERIOD = 900
 DEFAULT_MIN_TEMP = 16.0
 DEFAULT_MAX_TEMP = 30.0
 DEFAULT_AUTO_RESET = False

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 import logging
+import time
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -24,9 +25,11 @@ from .const import (
     CONF_AUTO_RESET,
     CONF_IDLE_SCAN_INTERVAL,
     CONF_LOG_TO_FILE,
+    CONF_OFF_GRACE_PERIOD,
     DEFAULT_AUTO_RESET,
     DEFAULT_IDLE_SCAN_INTERVAL,
     DEFAULT_LOG_TO_FILE,
+    DEFAULT_OFF_GRACE_PERIOD,
     DEFAULT_MAX_TEMP,
     DEFAULT_MIN_TEMP,
     DEFAULT_PORT,
@@ -71,6 +74,13 @@ class DPRemoteCoordinator(DataUpdateCoordinator[p.StoveState]):
         self._idle_seconds = int(
             entry.options.get(CONF_IDLE_SCAN_INTERVAL, DEFAULT_IDLE_SCAN_INTERVAL)
         )
+        self._off_grace_seconds = int(
+            entry.options.get(CONF_OFF_GRACE_PERIOD, DEFAULT_OFF_GRACE_PERIOD)
+        )
+        # Monotonic timestamp of the last reading in which the stove was active;
+        # None until we've seen it active (so an at-startup off state backs off
+        # immediately instead of getting a false grace window).
+        self._last_active_monotonic: float | None = None
         super().__init__(
             hass=hass,
             logger=_LOGGER,
@@ -107,9 +117,26 @@ class DPRemoteCoordinator(DataUpdateCoordinator[p.StoveState]):
         return state
 
     def _apply_adaptive_interval(self, burner_status: str) -> None:
-        """Slow polling while the stove is off, speed it up while it's on."""
+        """Slow polling while the stove is off, speed it up while it's on.
+
+        A grace window after shut-off keeps the fast rate briefly so a quick
+        off→on is caught almost immediately.
+        """
+        now = time.monotonic()
+        if polling.is_stove_active(burner_status):
+            self._last_active_monotonic = now
+            seconds_since_active = 0.0
+        elif self._last_active_monotonic is None:
+            seconds_since_active = float("inf")
+        else:
+            seconds_since_active = now - self._last_active_monotonic
+
         seconds = polling.choose_interval_seconds(
-            burner_status, self._active_seconds, self._idle_seconds
+            burner_status,
+            self._active_seconds,
+            self._idle_seconds,
+            seconds_since_active,
+            self._off_grace_seconds,
         )
         new_interval = timedelta(seconds=seconds)
         if new_interval != self.update_interval:

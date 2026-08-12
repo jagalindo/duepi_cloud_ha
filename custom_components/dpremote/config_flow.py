@@ -24,10 +24,12 @@ from .const import (
     CONF_LOG_TO_FILE,
     CONF_MAX_TEMP,
     CONF_MIN_TEMP,
+    CONF_OFF_GRACE_PERIOD,
     DEFAULT_AUTO_RESET,
     DEFAULT_IDLE_SCAN_INTERVAL,
     DEFAULT_LOG_TO_FILE,
     DEFAULT_MAX_TEMP,
+    DEFAULT_OFF_GRACE_PERIOD,
     DEFAULT_MIN_TEMP,
     DEFAULT_NAME,
     DEFAULT_PORT,
@@ -106,6 +108,7 @@ class DPRemoteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_LOG_TO_FILE: DEFAULT_LOG_TO_FILE,
                     CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
                     CONF_IDLE_SCAN_INTERVAL: DEFAULT_IDLE_SCAN_INTERVAL,
+                    CONF_OFF_GRACE_PERIOD: DEFAULT_OFF_GRACE_PERIOD,
                 }
                 return self.async_create_entry(
                     title=user_input[CONF_NAME], data=data, options=options
@@ -163,6 +166,10 @@ class DPRemoteOptionsFlow(config_entries.OptionsFlow):
                     CONF_IDLE_SCAN_INTERVAL,
                     default=opts.get(CONF_IDLE_SCAN_INTERVAL, DEFAULT_IDLE_SCAN_INTERVAL),
                 ): vol.All(vol.Coerce(int), vol.Range(min=15)),
+                vol.Required(
+                    CONF_OFF_GRACE_PERIOD,
+                    default=opts.get(CONF_OFF_GRACE_PERIOD, DEFAULT_OFF_GRACE_PERIOD),
+                ): vol.All(vol.Coerce(int), vol.Range(min=0)),
             }
         )
         return self.async_show_form(step_id="init", data_schema=schema)

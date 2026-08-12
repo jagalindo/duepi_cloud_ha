@@ -72,11 +72,15 @@ Polling is **adaptive** so it doesn't hammer the cloud while the stove is idle:
 
 - **While the stove is on** (or transitioning — igniting, cleaning, eco‑idle,
   cooling down): every **60 s** by default.
-- **While the stove is fully off**: every **15 min** by default — still frequent
-  enough to notice a remote/scheduled turn‑on within one cycle.
+- **For a grace window right after it turns off** (default **15 min**): keep the
+  fast 60 s rate, so if you switch it back on from the app it's noticed almost
+  immediately.
+- **While the stove stays off past that window**: every **15 min** by default —
+  still frequent enough to catch a scheduled turn‑on within one cycle.
 
-Both intervals are configurable under *Settings → Devices & Services → DPRemote →
-Configure* ("Poll interval while the stove is ON/OFF"). Minimum 15 s; the idle
+All three are configurable under *Settings → Devices & Services → DPRemote →
+Configure* ("Poll interval while ON/OFF" and "Keep fast polling after OFF").
+Interval minimum is 15 s (grace can be 0 to back off immediately); the idle
 interval is clamped to be at least the active one.
 
 ## Data recording (for tuning & optimization)
