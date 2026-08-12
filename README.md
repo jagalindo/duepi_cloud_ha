@@ -63,6 +63,22 @@ server is a **master/slave TCP relay** on `duepiwebserver.com:3000` (fallback IP
 The app also ships an optional AES layer (`encryptionEnabled` / `encryptionKey`),
 off on the standard path and not implemented here.
 
+## Polling
+
+All entities share one `DataUpdateCoordinator`; each poll opens a short‑lived
+connection to the relay, runs the Duepi‑EVO command sequence, and closes it.
+
+Polling is **adaptive** so it doesn't hammer the cloud while the stove is idle:
+
+- **While the stove is on** (or transitioning — igniting, cleaning, eco‑idle,
+  cooling down): every **60 s** by default.
+- **While the stove is fully off**: every **15 min** by default — still frequent
+  enough to notice a remote/scheduled turn‑on within one cycle.
+
+Both intervals are configurable under *Settings → Devices & Services → DPRemote →
+Configure* ("Poll interval while the stove is ON/OFF"). Minimum 15 s; the idle
+interval is clamped to be at least the active one.
+
 ## Data recording (for tuning & optimization)
 
 The integration records its readings in two complementary ways so you can analyse

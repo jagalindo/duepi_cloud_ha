@@ -28,7 +28,8 @@
           "max_temp": "Maximum target temperature (°C)",
           "auto_reset": "Auto-reset on out-of-pellets / ignition failure",
           "log_to_file": "Log every poll to a CSV file (config/dpremote/) for later analysis",
-          "scan_interval": "Poll interval (seconds)"
+          "scan_interval": "Poll interval while the stove is ON (seconds)",
+          "idle_scan_interval": "Poll interval while the stove is OFF (seconds)"
         }
       }
     }

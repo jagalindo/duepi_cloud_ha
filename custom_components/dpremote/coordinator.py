@@ -15,15 +15,17 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import slugify
 
-from . import protocol as p, recorder
+from . import polling, protocol as p, recorder
 from .client import ClientError, DuepiClient
 from .const import (
     CONF_DEVICE_CODE,
     CONF_MAX_TEMP,
     CONF_MIN_TEMP,
     CONF_AUTO_RESET,
+    CONF_IDLE_SCAN_INTERVAL,
     CONF_LOG_TO_FILE,
     DEFAULT_AUTO_RESET,
+    DEFAULT_IDLE_SCAN_INTERVAL,
     DEFAULT_LOG_TO_FILE,
     DEFAULT_MAX_TEMP,
     DEFAULT_MIN_TEMP,
@@ -63,12 +65,19 @@ class DPRemoteCoordinator(DataUpdateCoordinator[p.StoveState]):
     """Central coordinator that owns a cloud DuepiClient."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
-        scan_interval = int(entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL))
+        self._active_seconds = int(
+            entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+        )
+        self._idle_seconds = int(
+            entry.options.get(CONF_IDLE_SCAN_INTERVAL, DEFAULT_IDLE_SCAN_INTERVAL)
+        )
         super().__init__(
             hass=hass,
             logger=_LOGGER,
             name=f"{DOMAIN}_{entry.title}",
-            update_interval=timedelta(seconds=scan_interval),
+            # Start at the active interval so the first state is picked up promptly;
+            # the interval then adapts to the burner status after each poll.
+            update_interval=timedelta(seconds=self._active_seconds),
         )
         self.entry = entry
         self.client = build_client(entry)
@@ -93,4 +102,22 @@ class DPRemoteCoordinator(DataUpdateCoordinator[p.StoveState]):
             await self.hass.async_add_executor_job(
                 recorder.append_snapshot, self._log_path, state
             )
+
+        self._apply_adaptive_interval(state.burner_status)
         return state
+
+    def _apply_adaptive_interval(self, burner_status: str) -> None:
+        """Slow polling while the stove is off, speed it up while it's on."""
+        seconds = polling.choose_interval_seconds(
+            burner_status, self._active_seconds, self._idle_seconds
+        )
+        new_interval = timedelta(seconds=seconds)
+        if new_interval != self.update_interval:
+            _LOGGER.debug(
+                "%s: burner '%s' -> polling every %ss",
+                self.name,
+                burner_status,
+                seconds,
+            )
+            # Picked up by the coordinator when it schedules the next refresh.
+            self.update_interval = new_interval
