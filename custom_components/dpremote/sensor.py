@@ -10,6 +10,7 @@ from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
+    SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME, EntityCategory, UnitOfTemperature
@@ -62,6 +63,7 @@ SENSOR_DESCRIPTIONS: tuple[DPRemoteSensorDescription, ...] = (
         name="Exhaust Fan Speed",
         entity_category=EntityCategory.DIAGNOSTIC,
         native_unit_of_measurement="rpm",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda s: s.exh_fan_speed_rpm,
     ),
     DPRemoteSensorDescription(
@@ -70,12 +72,14 @@ SENSOR_DESCRIPTIONS: tuple[DPRemoteSensorDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         entity_category=EntityCategory.DIAGNOSTIC,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda s: s.flu_gas_temp_c,
     ),
     DPRemoteSensorDescription(
         key=ATTR_PELLET_SPEED,
         name="Pellet Speed",
         entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda s: s.pellet_speed,
     ),
     DPRemoteSensorDescription(
@@ -90,20 +94,25 @@ SENSOR_DESCRIPTIONS: tuple[DPRemoteSensorDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         entity_category=EntityCategory.DIAGNOSTIC,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda s: s.pcb_temp_c,
     ),
     DPRemoteSensorDescription(
         key=ATTR_TOTAL_BURN_TIME,
         name="Total Burn Time",
+        device_class=SensorDeviceClass.DURATION,
         entity_category=EntityCategory.DIAGNOSTIC,
         native_unit_of_measurement="h",
+        state_class=SensorStateClass.TOTAL_INCREASING,
         value_fn=lambda s: s.total_burn_time_h,
     ),
     DPRemoteSensorDescription(
         key=ATTR_BURN_TIME_SINCE_RESET,
         name="Burn Time Since Reset",
+        device_class=SensorDeviceClass.DURATION,
         entity_category=EntityCategory.DIAGNOSTIC,
         native_unit_of_measurement="h",
+        state_class=SensorStateClass.TOTAL_INCREASING,
         value_fn=lambda s: s.burn_time_since_reset_h,
     ),
 )

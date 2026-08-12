@@ -18,12 +18,12 @@ Duepi‑EVO command set this project reuses.
 | Local TCP transport (`transport.py`) | ✅ done, loopback‑tested |
 | Home Assistant entities (climate / sensors / binary_sensor) | ✅ done |
 | Config + options flow | ✅ done |
-| **Cloud relay handshake** (`master:<code>#` → `duepiwebserver.com:3000`) | ✅ implemented from the MyDPremote APK, loopback‑tested |
-| Live end‑to‑end against a real stove | ⏳ needs your validation |
+| **Cloud relay handshake** (`master:<code>#` → the relay) | ✅ implemented from the MyDPremote APK |
+| Live end‑to‑end against a real stove | ✅ confirmed working |
 
-> The cloud handshake is reverse‑engineered and **not yet verified against a live
-> stove**. If your module uses the optional AES layer, or a different port, please
-> open an issue with what you see.
+> The cloud handshake is reverse‑engineered but **confirmed working against a live
+> stove**. Some modules may use a different address/port or the optional AES layer —
+> if yours doesn't connect, please open an issue with what you see.
 
 ## Installation (HACS)
 
@@ -62,6 +62,34 @@ server is a **master/slave TCP relay** on `duepiwebserver.com:3000` (fallback IP
 
 The app also ships an optional AES layer (`encryptionEnabled` / `encryptionKey`),
 off on the standard path and not implemented here.
+
+## Data recording (for tuning & optimization)
+
+The integration records its readings in two complementary ways so you can analyse
+runtime behaviour and tune power levels, schedules, or setpoints later:
+
+1. **Home Assistant long‑term statistics (automatic).** The numeric sensors —
+   flue‑gas temperature, exhaust‑fan RPM, pellet speed, PCB temperature, and the
+   burn‑time counters — carry a `state_class`, so Home Assistant keeps long‑term
+   statistics for them out of the box. View them in *History* / the *Statistics*
+   graph card, and export from Developer Tools → Statistics. No setup needed.
+
+2. **CSV snapshot log (on by default, opt‑out).** Every successful poll is
+   appended as one row to:
+
+   ```
+   <config>/dpremote/<name>.csv
+   ```
+
+   with a header and these columns: `timestamp` (UTC ISO‑8601), `burner_status`,
+   `hvac_mode`, `heating`, `error_code`, `current_temp_c`, `target_temp_c`,
+   `power_level`, `flu_gas_temp_c`, `exh_fan_speed_rpm`, `pellet_speed`,
+   `pcb_temp_c`, `total_burn_time_h`, `burn_time_since_reset_h`,
+   `pressure_switch_active`. Open it in any spreadsheet or notebook.
+
+   Disable it any time under *Settings → Devices & Services → DPRemote →
+   Configure → "Log every poll to a CSV file"*. At the default 60 s poll interval
+   the file grows by roughly 200 KB/day.
 
 ## Architecture
 
@@ -115,7 +143,8 @@ is provided **as‑is, without warranty of any kind**. Treat it as community,
 best‑effort software:
 
 - The cloud protocol was recovered by static analysis of a third‑party app, not
-  from official documentation; details may be incomplete or wrong.
+  from official documentation. It is **confirmed working against a real stove**,
+  but details may still be incomplete for other models/firmware.
 - It controls a **combustion appliance**. Do not rely on it for safety‑critical
   behaviour, and never leave a pellet stove operating unattended on the basis of
   remote control. Keep your manufacturer‑provided safety devices in place.

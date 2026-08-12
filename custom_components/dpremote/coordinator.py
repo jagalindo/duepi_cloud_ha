@@ -13,21 +13,25 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import slugify
 
-from . import protocol as p
+from . import protocol as p, recorder
 from .client import ClientError, DuepiClient
 from .const import (
     CONF_DEVICE_CODE,
     CONF_MAX_TEMP,
     CONF_MIN_TEMP,
     CONF_AUTO_RESET,
+    CONF_LOG_TO_FILE,
     DEFAULT_AUTO_RESET,
+    DEFAULT_LOG_TO_FILE,
     DEFAULT_MAX_TEMP,
     DEFAULT_MIN_TEMP,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_SERVER,
     DOMAIN,
+    LOG_SUBDIR,
 )
 from .transport import CloudRelayTransport
 
@@ -70,6 +74,11 @@ class DPRemoteCoordinator(DataUpdateCoordinator[p.StoveState]):
         self.client = build_client(entry)
         self.auto_reset = bool(entry.options.get(CONF_AUTO_RESET, DEFAULT_AUTO_RESET))
 
+        self._log_path: str | None = None
+        if bool(entry.options.get(CONF_LOG_TO_FILE, DEFAULT_LOG_TO_FILE)):
+            filename = f"{slugify(entry.title) or entry.entry_id}.csv"
+            self._log_path = hass.config.path(LOG_SUBDIR, filename)
+
     async def _async_update_data(self) -> p.StoveState:
         """Fetch the latest snapshot from the stove via the cloud relay."""
         try:
@@ -77,6 +86,11 @@ class DPRemoteCoordinator(DataUpdateCoordinator[p.StoveState]):
             if self.auto_reset and state.error_code in p.AUTO_RESET_ERRORS:
                 await self.hass.async_add_executor_job(self.client.remote_reset)
                 state = await self.hass.async_add_executor_job(self.client.fetch_state)
-            return state
         except ClientError as err:
             raise UpdateFailed(str(err)) from err
+
+        if self._log_path is not None:
+            await self.hass.async_add_executor_job(
+                recorder.append_snapshot, self._log_path, state
+            )
+        return state

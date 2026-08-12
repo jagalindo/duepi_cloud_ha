@@ -20,9 +20,11 @@ from .client import ClientError, DuepiClient
 from .const import (
     CONF_AUTO_RESET,
     CONF_DEVICE_CODE,
+    CONF_LOG_TO_FILE,
     CONF_MAX_TEMP,
     CONF_MIN_TEMP,
     DEFAULT_AUTO_RESET,
+    DEFAULT_LOG_TO_FILE,
     DEFAULT_MAX_TEMP,
     DEFAULT_MIN_TEMP,
     DEFAULT_NAME,
@@ -99,6 +101,7 @@ class DPRemoteConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_MIN_TEMP: DEFAULT_MIN_TEMP,
                     CONF_MAX_TEMP: DEFAULT_MAX_TEMP,
                     CONF_AUTO_RESET: DEFAULT_AUTO_RESET,
+                    CONF_LOG_TO_FILE: DEFAULT_LOG_TO_FILE,
                     CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
                 }
                 return self.async_create_entry(
@@ -144,6 +147,10 @@ class DPRemoteOptionsFlow(config_entries.OptionsFlow):
                 ): vol.Coerce(float),
                 vol.Required(
                     CONF_AUTO_RESET, default=opts.get(CONF_AUTO_RESET, DEFAULT_AUTO_RESET)
+                ): bool,
+                vol.Required(
+                    CONF_LOG_TO_FILE,
+                    default=opts.get(CONF_LOG_TO_FILE, DEFAULT_LOG_TO_FILE),
                 ): bool,
                 vol.Required(
                     CONF_SCAN_INTERVAL,

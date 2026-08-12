@@ -10,6 +10,7 @@ CONF_DEVICE_CODE = "device_code"
 CONF_MIN_TEMP = "min_temp"
 CONF_MAX_TEMP = "max_temp"
 CONF_AUTO_RESET = "auto_reset"
+CONF_LOG_TO_FILE = "log_to_file"
 
 DEFAULT_NAME = "DPRemote Stove"
 # Defaults are only a starting hint: the address and port are per-account and
@@ -21,6 +22,10 @@ DEFAULT_SCAN_INTERVAL = 60
 DEFAULT_MIN_TEMP = 16.0
 DEFAULT_MAX_TEMP = 30.0
 DEFAULT_AUTO_RESET = False
+# Append every successful poll to a CSV under <config>/dpremote/ for later
+# analysis/optimization. On by default; disable in the integration options.
+DEFAULT_LOG_TO_FILE = True
+LOG_SUBDIR = "dpremote"
 
 # Sensor / attribute keys.
 ATTR_BURNER_STATUS = "burner_status"
